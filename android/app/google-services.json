@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "385345935045",
+    "project_id": "online-medicine-80299",
+    "storage_bucket": "online-medicine-80299.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385345935045:android:d885e8916483c90c0b02ac",
+        "android_client_info": {
+          "package_name": "com.example.online_medicine"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "385345935045-att1bs2giskc8qpt7g9m8fthrtau6ndb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.online_medicine",
+            "certificate_hash": "462732b06011ec93837b152252996f030e969584"
+          }
+        },
+        {
+          "client_id": "385345935045-qea2cvko87ikmb054fq18i2ae6uvvop3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzcQ13mW1s1DtJBkEzbA2ZurIBLEyd2YQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "385345935045-qea2cvko87ikmb054fq18i2ae6uvvop3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
