@@ -18,22 +18,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 1. تعريف الـ Key والـ Controllers جوه الـ State
   final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
+  late TextEditingController _confirmPasswordController;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -51,9 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: AppColors.blue.withOpacity(0.5),
                 elevation: 5,
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -62,11 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Image.asset(AppImages.smallLogo),
                       const Text(
                         "Welcome Back",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E2652),
-                        ),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1E2652)),
                       ),
                       const SizedBox(height: 10),
                       const Text(
@@ -76,11 +72,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // 2. تمرير الـ Key والـ Controllers للـ Form
                       FormScreen(
                         formKey: _loginFormKey,
                         emailController: _emailController,
                         passwordController: _passwordController,
+                        confirmPasswordController: _confirmPasswordController,
                       ),
 
                       const SizedBox(height: 20),
@@ -100,93 +96,42 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                           ),
-                          onPressed: () {
-                            {
-                              login();
-                              // هنا بنستخدم القيم اللي في الكنترولر عشان اللوجن
-                              debugPrint("Email: ${_emailController.text}");
-                            }
-                          },
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          onPressed: login,
+                          child: const Text("Login", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade300,
-                              thickness: 1,
-                              endIndent: 10,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1, endIndent: 10)),
                           const Text("Or"),
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade300,
-                              thickness: 1,
-                              indent: 10,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1, indent: 10)),
                         ],
                       ),
                       const SizedBox(height: 20),
-                      InkWell(
-                        onTap: () {
-                          googleSignIn();
-                          Navigator.pushReplacementNamed(context,AppRoutes.homeScreen);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _socialMediaIcon(
-                              child: Image.asset(
-                                AppImages.googleIcon,
-                                height: 30,
-                              ),
+
+                      // ✅ التصليح هنا: فصل أيقونة جوجل عشان الـ Navigator ميضربش
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: googleSignIn, // بننادي الدالة وهي اللي بتعمل Navigate لو نجحت
+                            child: _socialMediaIcon(
+                              child: Image.asset(AppImages.googleIcon, height: 30),
                             ),
-                            const SizedBox(width: 20),
-                            _socialMediaIcon(
-                              child: const Icon(
-                                Icons.facebook,
-                                color: Color(0xFF1877F2),
-                                size: 35,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            _socialMediaIcon(
-                              child: const Icon(
-                                Icons.apple,
-                                color: Colors.black,
-                                size: 35,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 20),
+                          _socialMediaIcon(child: const Icon(Icons.facebook, color: Color(0xFF1877F2), size: 35)),
+                          const SizedBox(width: 20),
+                          _socialMediaIcon(child: const Icon(Icons.apple, color: Colors.black, size: 35)),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.registerScreen,
-                          );
-                        },
-                        child: const Text(
-                          "Don’t have an account? Sign Up",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.registerScreen),
+                        child: const Text("Don’t have an account? Sign Up", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -200,54 +145,62 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void login() async {
-    if (_loginFormKey.currentState!.validate()) {}
-    try {
-      UIUtils.showLoading(context, isDismissible: false);
-      UserCredential userCredential = await FirebaseService.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      UIUtils.hideDialog(context);
-      UIUtils.showToastMessage("User Logged-In Successfully", Colors.green);
-      Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
-    } on FirebaseAuthException catch (exception) {
-      UIUtils.hideDialog(context);
-      UIUtils.showToastMessage("Invalid Email or Password", Colors.red);
-    } catch (exception) {
-      UIUtils.hideDialog(context);
-      UIUtils.showToastMessage("Failed to login", Colors.red);
+    if (_loginFormKey.currentState!.validate()) {
+      try {
+        UIUtils.showLoading(context, isDismissible: false);
+        await FirebaseService.login(_emailController.text.trim(), _passwordController.text);
+        UIUtils.hideDialog(context);
+        UIUtils.showToastMessage("User Logged-In Successfully", Colors.green);
+        Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      } on FirebaseAuthException catch (e) {
+        UIUtils.hideDialog(context);
+        UIUtils.showToastMessage("Invalid Email or Password", Colors.red);
+      } catch (e) {
+        UIUtils.hideDialog(context);
+        UIUtils.showToastMessage("Failed to login", Colors.red);
+      }
     }
   }
 
-  Future<void>googleSignIn()async{
-    try
-    {
-      final GoogleSignIn googleSignIn=GoogleSignIn.instance;
+  Future<void> googleSignIn() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
       await googleSignIn.initialize(
-
-        serverClientId:"385345935045-qea2cvko87ikmb054fq18i2ae6uvvop3.apps.googleusercontent.com",
+        serverClientId: "385345935045-qea2cvko87ikmb054fq18i2ae6uvvop3.apps.googleusercontent.com",
       );
+
       final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
-      if(googleUser==null)return;
+      if (googleUser == null) return;
+
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-
       final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
-      UserCredential firebaseUser=await FirebaseAuth.instance.signInWithCredential(credential);
-      UserModel finalUser = UserModel(
-          id: firebaseUser.user?.uid?? " ",
-          email:firebaseUser.user?.email ??"No email provided", name: firebaseUser.user?.displayName ?? "No name provided"
-      );
-      await FirebaseService.addUserToFireStore(finalUser);
 
-    }catch(exception){
-      log(exception.toString());
+      UIUtils.showLoading(context, isDismissible: false);
+      UserCredential firebaseUser = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      UserModel finalUser = UserModel(
+          id: firebaseUser.user?.uid ?? " ",
+          email: firebaseUser.user?.email ?? "No email provided",
+          name: firebaseUser.user?.displayName ?? "No name provided"
+      );
+
+      await FirebaseService.addUserToFireStore(finalUser);
+      UIUtils.hideDialog(context);
+
+      if (mounted) {
+        UIUtils.showToastMessage("User Logged-In Successfully", Colors.green);
+        Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      }
+    } catch (exception) {
+      UIUtils.hideDialog(context);
+      log("Detailed Error: ${exception.toString()}");
+      UIUtils.showToastMessage("Google Sign-In Failed", Colors.red);
     }
   }
 
   Widget _socialMediaIcon({required Widget child}) {
     return Container(
-      width: 55,
-      height: 55,
+      width: 55, height: 55,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.grey.shade300),

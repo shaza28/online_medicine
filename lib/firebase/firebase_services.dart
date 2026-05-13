@@ -29,8 +29,18 @@ class FirebaseService {
     });
   }
 
-  static Stream<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
+  /*static Stream<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
     String uid = FirebaseAuth.instance.currentUser!.uid;
    return FirebaseFirestore.instance.collection("Users").doc(uid).snapshots();
+  }*/
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return FirebaseFirestore.instance.collection("Users").doc(user.uid).snapshots();
+    } else {
+      // في حالة عدم وجود مستخدم، نعيد stream فارغ لتجنب الـ Crash
+      return const Stream.empty();
+    }
   }
 }

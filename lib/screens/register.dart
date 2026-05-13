@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:online_medicine/core/ui_utils.dart';
-import 'package:online_medicine/firebase/firebase_services.dart';
-import 'package:online_medicine/screens/models/user_models.dart';
 
 import '../core/app_data.dart';
+import '../core/ui_utils.dart';
+import '../firebase/firebase_services.dart';
 import 'form.dart';
+import 'models/user_models.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,34 +20,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   late TextEditingController _nameController;
+  late TextEditingController _confirmPasswordController;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
-    _nameController=TextEditingController();
+    _nameController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-_nameController.dispose();
+    _nameController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
-        leading: InkWell(
-          onTap: () {
+        leading: IconButton(
+          onPressed: () {
             Navigator.pushReplacementNamed(context, AppRoutes.loginScreen);
           },
-          child: Icon(
+          icon: Icon(
             Icons.arrow_circle_left_outlined,
             color: AppColors.blue,
             size: 30,
@@ -59,11 +63,8 @@ _nameController.dispose();
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 2. الكارد
               Card(
-                color: AppColors.blue.withOpacity(
-                  0.5,
-                ), // خليته شفاف شوية زي ما كنتِ عاملة
+                color: AppColors.blue.withOpacity(0.5),
                 elevation: 5,
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 shape: RoundedRectangleBorder(
@@ -76,7 +77,7 @@ _nameController.dispose();
                     children: [
                       Image.asset(AppImages.smallLogo),
                       const Text(
-                        "Welcome Back",
+                        "Create Account", //
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -85,23 +86,24 @@ _nameController.dispose();
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        "Create an account to start your journey!\n towards better health care",
+                        "Join us to start your journey\ntowards better health care",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.black),
                       ),
                       const SizedBox(height: 16),
 
-                      // الفورم المنفصل
+                      // ✅ استخدام الفورم مع تفعيل خاصية isSignup لإظهار حقل الاسم والتأكيد [cite: 52, 63, 66]
                       FormScreen(
                         formKey: _registerKey,
-                        emailController:
-                            _emailController, // ✅ مررنا الكنترولر الخاص بالإيميل
-                        passwordController:
-                            _passwordController, // ✅ مررنا الكنترولر الخاص بالباسورد
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        confirmPasswordController: _confirmPasswordController,
+                        nameController: _nameController,
+                        isSignup: true,
                       ),
                       const SizedBox(height: 20),
 
-                      // زرار الدخول بالجرادينت
+                      // زر إنشاء الحساب بالجرادينت [cite: 54, 67, 128]
                       Container(
                         width: double.infinity,
                         height: 55,
@@ -112,13 +114,6 @@ _nameController.dispose();
                             end: Alignment.centerRight,
                             colors: [Color(0xFF49D6A5), Color(0xFF4EBCE8)],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4EBCE8).withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
                         ),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -129,14 +124,10 @@ _nameController.dispose();
                             ),
                           ),
                           onPressed: () {
-                            // لو البيانات صحيحة، الكود اللي هنا هيتنفذ
-                            print("Validation Success!");
                             createAccount();
                           },
-
-                          // قوس واحد يقفل الـ onPressed
                           child: const Text(
-                            "Create Account",
+                            "Sign Up",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -146,14 +137,14 @@ _nameController.dispose();
                         ),
                       ),
 
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/login');
+                          Navigator.pushReplacementNamed(context, AppRoutes.loginScreen); //
                         },
                         child: const Text(
-                          "Already Have Account ? Login",
-                          style: TextStyle(color: AppColors.white),
+                          "Already Have Account? Login",
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ],
@@ -167,49 +158,40 @@ _nameController.dispose();
     );
   }
 
-  Widget _socialMediaIcon({required Widget child}) {
-    return Container(
-      width: 55,
-      height: 55,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Center(child: child),
-    );
-  }
-
   void createAccount() async {
-    // 1. التأكد من الـ Validation
+    // 1. التأكد من الـ Validation [cite: 56, 57]
     if (_registerKey.currentState?.validate() ?? false) {
       try {
-        // التحقق إن الـ widget لسه موجود قبل استخدام الـ context
         if (!mounted) return;
 
-        UIUtils.showLoading(context, isDismissible: false);
+        UIUtils.showLoading(context, isDismissible: false); // [cite: 36]
 
-        // محاولة إنشاء الحساب
+        // 2. محاولة إنشاء الحساب في Firebase Auth [cite: 58, 92]
         UserCredential userCredential = await FirebaseService.register(
           _emailController.text.trim(),
           _passwordController.text,
         );
-        String extractedName = _emailController.text.split('@')[0];
 
-        // التحقق مرة تانية قبل قفل الدايلوج والانتقال
+        // 3. تجهيز بيانات المستخدم وحفظها في Firestore (Bonus)
+        UserModel user = UserModel(
+            id: userCredential.user!.uid,
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim()
+        );
+
+        await FirebaseService.addUserToFireStore(user); // [cite: 96]
+
         if (!mounted) return;
-        UserModel user=UserModel(id:userCredential.user!.uid, name: extractedName, email: _emailController.text.trim());
-        await FirebaseService.addUserToFireStore(user);
         UIUtils.hideDialog(context);
         UIUtils.showToastMessage("Successful Registration", Colors.green);
 
-        // الانتقال للوجن
+        // 4. الانتقال للوجن بعد النجاح [cite: 55]
         Navigator.pushReplacementNamed(context, AppRoutes.loginScreen);
       } on FirebaseAuthException catch (exception) {
         if (!mounted) return;
         UIUtils.hideDialog(context);
 
-        // التعامل مع أخطاء فايربيز المشهورة
+        // التعامل مع أخطاء فايربيز [cite: 37, 98]
         String message = "Registration Failed";
         if (exception.code == 'email-already-in-use') {
           message = "This email is already registered";
@@ -221,35 +203,8 @@ _nameController.dispose();
       } catch (exception) {
         if (!mounted) return;
         UIUtils.hideDialog(context);
-        UIUtils.showToastMessage(
-          "An error occurred: ${exception.toString()}",
-          Colors.red,
-        );
+        UIUtils.showToastMessage("An error occurred", Colors.red);
       }
     }
   }
-
-  /*void createAccount() async {
-    if (_registerKey.currentState!.validate()) {
-      try {
-        UIUtils.showLoading(context, isDismissible: false);
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-        UIUtils.hideDialog(context);
-        UIUtils.showToastMessage("Successful Registration", Colors.green);
-        Navigator.pushReplacementNamed(context, AppRoutes.loginScreen);
-
-      } on FirebaseAuthException catch (exception) {
-        UIUtils.hideDialog(context);
-        UIUtils.showToastMessage(exception.code, Colors.red);
-      } catch (exception) {
-        UIUtils.hideDialog(context);
-        UIUtils.showToastMessage("Failed To Register", Colors.red);
-
-      }
-    }
-  }*/
 }
