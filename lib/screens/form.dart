@@ -61,7 +61,7 @@ class _FormScreenState extends State<FormScreen> {
               controller: widget.nameController,
               cursorColor: AppColors.blue,
               validator: _validateName,
-              decoration: _buildInputDecoration("Full Name", Icons.person_outline),
+              decoration: _buildInputDecoration("Enter Your Name", Icons.person_outline),
             ),
             const SizedBox(height: 16),
           ],

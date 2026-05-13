@@ -93,7 +93,6 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // 4. زر خروج إضافي داخل الصفحة (اختياري لزيادة الشكل الجمالي) [cite: 134]
             SizedBox(
               width: double.infinity,
               height: 55,
